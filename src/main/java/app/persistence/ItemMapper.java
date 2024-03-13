@@ -1,6 +1,7 @@
 package app.persistence;
 
 import app.entities.Item;
+import app.entities.User;
 import app.exceptions.DatabaseException;
 
 import io.javalin.http.Context;
@@ -17,12 +18,12 @@ public class ItemMapper {
 
         ConnectionPool connectionPool = ConnectionPool.getInstance();
 
-        String sql = "SELECT * FROM item";
+        String sql = "SELECT * FROM public.item";
 
         try (Connection connection = connectionPool.getConnection()) {
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
-                ResultSet rs = ps.getResultSet();
+                ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
                     int id = rs.getInt("item_id");
                     String author = rs.getString("author");
@@ -31,24 +32,39 @@ public class ItemMapper {
                     int price = rs.getInt("price");
                     items.add(new Item(id, author, title, body, price));
                 }
+            } catch (SQLException throwables) {
+                throw new DatabaseException("Could not get all items from database");
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
             throw new DatabaseException("Could not establish connection to database");
         }
         return items;
     }
+
+    public static void createNewItem(Context ctx) {
+        String sql = "INSERT INTO public.item (author, title, body, price) VALUES (?, ?, ?, ?)";
+
+        ConnectionPool connectionPool = ConnectionPool.getInstance();
+
+        try (Connection connection = connectionPool.getConnection()) {
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                User user = ctx.sessionAttribute("currentUser");
+                String author = user.getUsername();
+                String title = ctx.formParam("title");
+                String body = ctx.formParam("body");
+                int price = Integer.parseInt(ctx.formParam("price"));
+
+                ps.setString(1,author);
+                ps.setString(2,title);
+                ps.setString(3,body);
+                ps.setInt(4,price);
+
+                ps.executeUpdate();
+
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
-
-/*
-#ItemMapper
-Har til formål at hente data fra databasen og lave en liste af Items ud fra dataen.
-Den skal have tilføjet følgende metode:
-public static List<Item> getItems(Context ctx)
-{
-    // fetch data from database (same procedure as we did in UserMapper.login())
-    // instead of if(rs.next()) then use a while loop; while(rs.next())
-    // inside the while loop, you create a new Item() using data from the db and add it to an arraylist.
-    // return the arraylist
-
- */

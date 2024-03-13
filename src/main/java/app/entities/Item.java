@@ -15,6 +15,18 @@ public class Item {
         this.price = price;
     }
 
+    public String getTimestamp(){
+        return "Here is the time";
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public String getAuthor() {
         return author;
     }

@@ -8,11 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ItemOverviewController {
-    public static List<Item> loadItems(Context ctx){
+    public static List<Item> loadItems(Context ctx) {
+
         List<Item> items = new ArrayList<>();
-        try{
+        try {
             items = ItemMapper.getItems(ctx);
-        } catch (Exception e){
+        } catch (Exception e) {
             ctx.attribute("message", e.getMessage());
         }
         return items;

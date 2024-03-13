@@ -1,6 +1,7 @@
 package app;
 
 import app.config.ThymeleafConfig;
+import app.controllers.ItemCreateController;
 import app.controllers.ItemOverviewController;
 import app.controllers.UserController;
 import io.javalin.Javalin;
@@ -18,20 +19,25 @@ public class Main {
         }).start(7070);
 
         // Routing
-        app.get("/", ctx -> ctx.redirect("index.html"));
-        app.get("/index.html", ctx -> ctx.render("index.html"));
+        //app.get("/", ctx -> ctx.redirect("index.html"));
+        app.get("/", ctx -> ctx.render("index.html"));
 
         app.post("/login", ctx -> {
             UserController.login(ctx);
         });
 
-        app.get("/welcome.html", ctx -> ctx.render("welcome.html"));
+        // app.get("/welcome.html", ctx -> ctx.render("welcome.html"));
 
         app.get("/welcome", ctx -> {
             var items = ItemOverviewController.loadItems(ctx);
             ctx.render("/welcome.html", Map.of("items", items));
         });
 
+        //create item redirect
+        app.get("/createitem", ctx -> ctx.render("/createitem.html"));
 
+        app.post("/submitItem", ctx -> {
+            ItemCreateController.createItem(ctx);
+                });
     }
 }
